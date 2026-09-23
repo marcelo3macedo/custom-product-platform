@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { benefits } from "@/data/store";
 
 const icons = [
@@ -11,19 +12,40 @@ export default function Benefits() {
   return (
     <section className="border-y border-zinc-200 bg-white">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-4">
-        {benefits.map((benefit, i) => (
-          <div key={benefit.title} className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round">
-                {icons[i]}
-              </svg>
+        {benefits.map((benefit, i) => {
+          const isCustomize = benefit.title === "Personalize online";
+          const Content = (
+            <div className={`flex items-center gap-3 ${isCustomize ? "group cursor-pointer" : ""}`}>
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition ${
+                  isCustomize
+                    ? "bg-indigo-600 text-white group-hover:scale-110 shadow-sm shadow-indigo-200"
+                    : "bg-indigo-50 text-indigo-600"
+                }`}
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round">
+                  {icons[i]}
+                </svg>
+              </div>
+              <div>
+                <p className={`text-sm font-semibold text-zinc-900 ${isCustomize ? "group-hover:text-indigo-600" : ""}`}>
+                  {benefit.title} {isCustomize && "→"}
+                </p>
+                <p className="text-xs text-zinc-500">{benefit.text}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-zinc-900">{benefit.title}</p>
-              <p className="text-xs text-zinc-500">{benefit.text}</p>
-            </div>
-          </div>
-        ))}
+          );
+
+          if (isCustomize) {
+            return (
+              <Link key={benefit.title} href="/customizar" title="Abrir editor de personalização">
+                {Content}
+              </Link>
+            );
+          }
+
+          return <div key={benefit.title}>{Content}</div>;
+        })}
       </div>
     </section>
   );

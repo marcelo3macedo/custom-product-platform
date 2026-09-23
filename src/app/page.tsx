@@ -1,5 +1,6 @@
 import Benefits from "@/components/store/Benefits";
 import Categories from "@/components/store/Categories";
+import CustomizerCtaBanner from "@/components/store/CustomizerCtaBanner";
 import Footer from "@/components/store/Footer";
 import Header from "@/components/store/Header";
 import Hero from "@/components/store/Hero";
@@ -14,6 +15,7 @@ export default function Home() {
         <Hero />
         <Benefits />
         <Categories />
+        <CustomizerCtaBanner />
         <ProductGrid />
         <PromoBanner />
       </main>

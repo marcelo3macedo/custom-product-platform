@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { navLinks } from "@/data/store";
 
 export default function Header() {
@@ -24,19 +25,34 @@ export default function Header() {
           </svg>
         </button>
 
-        <a href="#" className="text-xl font-black tracking-tight text-zinc-900">
+        <Link href="/" className="text-xl font-black tracking-tight text-zinc-900">
           custom<span className="text-indigo-600">.</span>store
-        </a>
+        </Link>
 
         <nav className="ml-8 hidden gap-6 lg:flex">
           {navLinks.map((link) => (
-            <a key={link.label} href={link.href} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
+            <Link
+              key={link.label}
+              href={link.href}
+              className={`text-sm font-medium transition ${
+                link.href === "/customizar"
+                  ? "font-bold text-indigo-600 hover:text-indigo-800"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-2">
+          <Link
+            href="/customizar"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-indigo-700"
+          >
+            <span>🎨</span>
+            <span>Personalizar</span>
+          </Link>
           <div className="relative mr-2 hidden md:block">
             <input
               type="search"
@@ -79,15 +95,23 @@ export default function Header() {
             placeholder="Buscar produtos..."
             className="mb-3 w-full rounded-full border border-zinc-300 bg-zinc-50 px-4 py-2 text-sm outline-none focus:border-indigo-500 md:hidden"
           />
+          <Link
+            href="/customizar"
+            onClick={() => setOpen(false)}
+            className="mb-3 flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-center text-sm font-bold text-white shadow-xs"
+          >
+            <span>🎨</span>
+            <span>Abrir Estúdio de Personalização</span>
+          </Link>
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.label}
               href={link.href}
               onClick={() => setOpen(false)}
               className="block rounded-md px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
       )}
