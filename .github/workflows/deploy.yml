@@ -1,0 +1,108 @@
+name: CI / Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+      - name: Montar pacote standalone
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          cp -r public .next/standalone/
+          cp -r .next/static .next/standalone/.next/
+          cp deploy/ecosystem.config.cjs .next/standalone/
+          tar -czf release.tar.gz -C .next/standalone .
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        with:
+          name: release
+          path: release.tar.gz
+          retention-days: 7
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/var/www/custom-products-platform' }}
+      RELEASE: ${{ github.sha }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+
+      - name: Configurar SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          cat >> ~/.ssh/config <<CFG
+          Host deploy-target
+            HostName $SSH_HOST
+            User $SSH_USER
+            Port $SSH_PORT
+            IdentityFile ~/.ssh/id_deploy
+            IdentitiesOnly yes
+          CFG
+
+      - name: Enviar release
+        run: |
+          ssh deploy-target "mkdir -p '$DEPLOY_PATH/releases/$RELEASE' '$DEPLOY_PATH/shared'"
+          scp release.tar.gz "deploy-target:$DEPLOY_PATH/releases/$RELEASE/release.tar.gz"
+
+      - name: Ativar release e reiniciar
+        run: |
+          ssh deploy-target "DEPLOY_PATH='$DEPLOY_PATH' RELEASE='$RELEASE' bash -s" <<'REMOTE'
+          set -euo pipefail
+          # Carrega nvm se o Node foi instalado por ele (sessões SSH não interativas não leem .bashrc)
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm use 22.22.3 >/dev/null
+
+          cd "$DEPLOY_PATH/releases/$RELEASE"
+          tar -xzf release.tar.gz && rm release.tar.gz
+
+          ln -sfn "$DEPLOY_PATH/releases/$RELEASE" "$DEPLOY_PATH/current"
+          cd "$DEPLOY_PATH/current"
+          pm2 startOrReload ecosystem.config.cjs --update-env
+          pm2 save
+
+          # Mantém apenas as 5 releases mais recentes
+          cd "$DEPLOY_PATH/releases"
+          ls -1t | tail -n +6 | xargs -r rm -rf
+          REMOTE
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 10); do
+            if ssh deploy-target "curl -fsS -o /dev/null http://127.0.0.1:3010"; then
+              echo "App no ar"; exit 0
+            fi
+            sleep 3
+          done
+          echo "Health check falhou"; exit 1
