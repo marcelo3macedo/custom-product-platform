@@ -13,16 +13,16 @@ const CustomizerStudio = dynamic(
 
 function CustomizerSkeleton() {
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
-      <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-8">
-        <div className="h-6 w-48 animate-pulse rounded bg-zinc-200" />
-        <div className="h-8 w-32 animate-pulse rounded-lg bg-zinc-200" />
-      </header>
-      <div className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-6 p-8 lg:grid-cols-12">
-        <div className="h-[500px] animate-pulse rounded-3xl bg-zinc-200 lg:col-span-4" />
-        <div className="h-[500px] animate-pulse rounded-3xl bg-zinc-200 lg:col-span-5" />
-        <div className="h-[500px] animate-pulse rounded-3xl bg-zinc-200 lg:col-span-3" />
+    <div className="relative h-dvh w-full overflow-hidden bg-zinc-100">
+      <div className="absolute top-4 left-4 h-11 w-56 animate-pulse rounded-full bg-zinc-200" />
+      <div className="absolute top-4 right-4 h-11 w-64 animate-pulse rounded-full bg-zinc-200" />
+      <div className="absolute inset-0 flex items-center justify-center px-4 pt-16 pb-24 sm:pr-32 sm:pb-8 sm:pl-8">
+        <div
+          className="aspect-[4/5] animate-pulse rounded-3xl bg-zinc-200"
+          style={{ width: "min(540px, calc((100dvh - 7rem) * 0.8), 100%)" }}
+        />
       </div>
+      <div className="absolute top-1/2 right-4 hidden h-96 w-24 -translate-y-1/2 animate-pulse rounded-2xl bg-zinc-200 sm:block" />
     </div>
   );
 }
