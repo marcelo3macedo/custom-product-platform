@@ -16,6 +16,7 @@ export type Product = {
 export const navLinks = [
   { label: "Início", href: "/" },
   { label: "Personalizar 🎨", href: "/customizar" },
+  { label: "Criadores", href: "/criadores" },
   { label: "Camisetas", href: "#produtos" },
   { label: "Canecas", href: "#produtos" },
   { label: "Acessórios", href: "#produtos" },

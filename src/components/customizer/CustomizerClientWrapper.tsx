@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { ComponentProps } from "react";
 import type { ProductKind } from "@/data/store";
 
 const CustomizerStudio = dynamic(
@@ -30,8 +31,9 @@ function CustomizerSkeleton() {
 type Props = {
   initialKind: ProductKind;
   initialColor?: string;
+  initialDesign?: ComponentProps<typeof CustomizerStudio>["initialDesign"];
 };
 
-export default function CustomizerClientWrapper({ initialKind, initialColor }: Props) {
-  return <CustomizerStudio initialKind={initialKind} initialColor={initialColor} />;
+export default function CustomizerClientWrapper(props: Props) {
+  return <CustomizerStudio {...props} />;
 }

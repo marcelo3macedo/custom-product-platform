@@ -1,13 +1,26 @@
+import type { ReactNode } from "react";
 import type { ProductKind } from "@/data/store";
 
 type Props = {
   kind: ProductKind;
   color: string;
   className?: string;
+  /** Conteúdo SVG desenhado por cima do produto (ex.: estampa) */
+  children?: ReactNode;
+};
+
+// Área de impressão de cada produto, no sistema de coordenadas do viewBox (120 x 120)
+export const PRINT_AREAS: Record<ProductKind, { x: number; y: number; width: number; height: number }> = {
+  tshirt: { x: 38, y: 34, width: 44, height: 50 },
+  hoodie: { x: 42, y: 42, width: 36, height: 40 },
+  mug: { x: 27, y: 40, width: 50, height: 54 },
+  cap: { x: 38, y: 38, width: 44, height: 32 },
+  bag: { x: 30, y: 46, width: 60, height: 56 },
+  bottle: { x: 42, y: 32, width: 36, height: 72 },
 };
 
 // Ilustrações simples em SVG para substituir fotos enquanto os dados são mockados
-export default function ProductIllustration({ kind, color, className }: Props) {
+export default function ProductIllustration({ kind, color, className, children }: Props) {
   return (
     <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
       {kind === "tshirt" && (
@@ -46,6 +59,7 @@ export default function ProductIllustration({ kind, color, className }: Props) {
           <rect x="40" y="50" width="40" height="24" fill="#fff" opacity="0.25" />
         </>
       )}
+      {children}
     </svg>
   );
 }

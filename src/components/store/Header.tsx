@@ -16,7 +16,7 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-md p-2 text-zinc-700 hover:bg-zinc-100 lg:hidden"
+          className="rounded-md p-2 text-zinc-700 hover:bg-zinc-100 xl:hidden"
           aria-label="Abrir menu"
           aria-expanded={open}
         >
@@ -29,12 +29,12 @@ export default function Header() {
           custom<span className="text-indigo-600">.</span>store
         </Link>
 
-        <nav className="ml-8 hidden gap-6 lg:flex">
+        <nav className="ml-6 hidden gap-5 xl:flex">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className={`text-sm font-medium transition ${
+              className={`text-sm font-medium whitespace-nowrap transition ${
                 link.href === "/customizar"
                   ? "font-bold text-indigo-600 hover:text-indigo-800"
                   : "text-zinc-600 hover:text-zinc-900"
@@ -53,11 +53,11 @@ export default function Header() {
             <span>🎨</span>
             <span>Personalizar</span>
           </Link>
-          <div className="relative mr-2 hidden md:block">
+          <div className="relative mr-2 hidden md:block xl:hidden 2xl:block">
             <input
               type="search"
               placeholder="Buscar produtos..."
-              className="w-56 rounded-full border border-zinc-300 bg-zinc-50 py-2 pr-4 pl-10 text-sm outline-none focus:border-indigo-500 focus:bg-white"
+              className="w-48 rounded-full border border-zinc-300 bg-zinc-50 py-2 pr-4 pl-10 text-sm outline-none focus:border-indigo-500 focus:bg-white"
             />
             <svg className="absolute top-2.5 left-3.5 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <circle cx="11" cy="11" r="7" />
@@ -89,7 +89,7 @@ export default function Header() {
       </div>
 
       {open && (
-        <nav className="border-t border-zinc-200 px-4 py-3 lg:hidden">
+        <nav className="border-t border-zinc-200 px-4 py-3 xl:hidden">
           <input
             type="search"
             placeholder="Buscar produtos..."

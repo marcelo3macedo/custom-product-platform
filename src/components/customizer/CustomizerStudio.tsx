@@ -15,10 +15,19 @@ import {
 import ProductMockupFrame from "./ProductMockupFrame";
 import FloatingModal from "./FloatingModal";
 import ObjectToolbar, { type ToolbarPosition } from "./ObjectToolbar";
+import { designToFabric } from "./designToFabric";
+import { SHAPE_PATHS, type DesignElement } from "@/data/designs";
 
 type StudioProps = {
   initialKind?: ProductKind;
   initialColor?: string;
+  /** Estampa de um criador para carregar no canvas no lugar da arte padrão */
+  initialDesign?: {
+    title: string;
+    creatorName: string;
+    creatorSlug: string;
+    elements: DesignElement[];
+  };
 };
 
 type PanelId = "product" | "text" | "shapes" | "upload" | "stickers" | "layers";
@@ -100,6 +109,12 @@ const PANELS: { id: PanelId; label: string; title: string; subtitle: string; ico
 
 const SHAPE_SWATCHES = ["#f59e0b", "#ef4444", "#3b82f6", "#10b981", "#8b5cf6", "#18181b", "#ffffff"];
 
+const DEFAULT_DESIGN: DesignElement[] = [
+  { type: "shape", shape: "star", left: 140, top: 70, scale: 0.6, fill: "#f59e0b" },
+  { type: "text", left: 140, top: 128, text: "SEU DESIGN", fontSize: 28, fontFamily: "Impact, sans-serif", fontWeight: "bold", fill: "#ffffff" },
+  { type: "text", left: 140, top: 168, text: "★ EDIÇÃO EXCLUSIVA ★", fontSize: 12, fontFamily: "sans-serif", fontWeight: "bold", fill: "#e0e7ff" },
+];
+
 // Espaço mínimo (px) entre a toolbar do objeto e a borda da viewport
 const VIEWPORT_MARGIN = 72;
 
@@ -115,6 +130,7 @@ function describeObject(obj: FabricObject) {
 export default function CustomizerStudio({
   initialKind = "tshirt",
   initialColor,
+  initialDesign,
 }: StudioProps) {
   // Product state
   const [selectedKind, setSelectedKind] = useState<ProductKind>(initialKind);
@@ -200,41 +216,8 @@ export default function CustomizerStudio({
     });
     canvasRef.current = canvas;
 
-    // Arte inicial (no Fabric v7 a origem padrão dos objetos é o centro)
-    const initialText = new Textbox("SEU DESIGN", {
-      left: 140,
-      top: 128,
-      width: 210,
-      fontSize: 28,
-      fontFamily: "Impact, sans-serif",
-      fontWeight: "bold",
-      fill: "#ffffff",
-      textAlign: "center",
-    });
-
-    const initialStar = new Path(
-      "M 50 0 L 63 35 L 100 35 L 70 57 L 82 92 L 50 70 L 18 92 L 30 57 L 0 35 L 37 35 Z",
-      {
-        left: 140,
-        top: 70,
-        scaleX: 0.6,
-        scaleY: 0.6,
-        fill: "#f59e0b",
-      },
-    );
-
-    const initialBadgeText = new Textbox("★ EDIÇÃO EXCLUSIVA ★", {
-      left: 140,
-      top: 168,
-      width: 200,
-      fontSize: 12,
-      fontFamily: "sans-serif",
-      fontWeight: "bold",
-      fill: "#e0e7ff",
-      textAlign: "center",
-    });
-
-    canvas.add(initialStar, initialText, initialBadgeText);
+    // Arte inicial: estampa do criador ou arte padrão (no Fabric v7 a origem padrão dos objetos é o centro)
+    canvas.add(...designToFabric(initialDesign?.elements ?? DEFAULT_DESIGN));
     canvas.requestRenderAll();
 
     const refreshLayers = () => setLayers([...canvas.getObjects()]);
@@ -275,7 +258,7 @@ export default function CustomizerStudio({
       canvasRef.current = null;
       canvas.dispose();
     };
-  }, [updateToolbar]);
+  }, [updateToolbar, initialDesign]);
 
   // O mockup muda de tamanho/posição ao trocar de produto ou gabarito
   useEffect(() => {
@@ -319,15 +302,9 @@ export default function CustomizerStudio({
     } else if (type === "triangle") {
       shapeObj = new Triangle({ width: 100, height: 90, fill: shapeColor });
     } else if (type === "star") {
-      shapeObj = new Path(
-        "M 50 0 L 63 35 L 100 35 L 70 57 L 82 92 L 50 70 L 18 92 L 30 57 L 0 35 L 37 35 Z",
-        { scaleX: 0.9, scaleY: 0.9, fill: shapeColor },
-      );
+      shapeObj = new Path(SHAPE_PATHS.star.d, { scaleX: 0.9, scaleY: 0.9, fill: shapeColor });
     } else {
-      shapeObj = new Path(
-        "M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z",
-        { scaleX: 1.1, scaleY: 1.1, fill: shapeColor },
-      );
+      shapeObj = new Path(SHAPE_PATHS.heart.d, { scaleX: 1.1, scaleY: 1.1, fill: shapeColor });
     }
 
     insertObject(shapeObj);
@@ -532,7 +509,16 @@ export default function CustomizerStudio({
         </Link>
         <div className="hidden leading-tight sm:block">
           <p className="text-xs font-bold text-zinc-900">{currentProduct.name}</p>
-          <p className="text-[11px] text-zinc-500">{currentProduct.printAreaLabel}</p>
+          {initialDesign ? (
+            <p className="text-[11px] text-zinc-500">
+              Estampa “{initialDesign.title}” por{" "}
+              <Link href={`/criadores/${initialDesign.creatorSlug}`} className="font-medium text-indigo-600 hover:underline">
+                {initialDesign.creatorName}
+              </Link>
+            </p>
+          ) : (
+            <p className="text-[11px] text-zinc-500">{currentProduct.printAreaLabel}</p>
+          )}
         </div>
       </div>
 
